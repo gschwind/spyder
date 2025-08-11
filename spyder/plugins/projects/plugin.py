@@ -179,6 +179,7 @@ class Projects(SpyderDockablePlugin):
         open_project_action = self.get_action(ProjectsActions.OpenProject)
         close_project_action = self.get_action(ProjectsActions.CloseProject)
         delete_project_action = self.get_action(ProjectsActions.DeleteProject)
+        project_settings_action = self.get_action(ProjectsActions.ProjectSettings)
 
         projects_menu = main_menu.get_application_menu(
             ApplicationMenus.Projects)
@@ -196,6 +197,11 @@ class Projects(SpyderDockablePlugin):
                 menu_id=ApplicationMenus.Projects,
                 section=ProjectsMenuSections.Open)
 
+        main_menu.add_item_to_application_menu(
+            project_settings_action,
+            menu_id=ApplicationMenus.Projects,
+            section=ProjectsMenuSections.Extras)
+        
         main_menu.add_item_to_application_menu(
             self.get_widget().recent_project_menu,
             menu_id=ApplicationMenus.Projects,

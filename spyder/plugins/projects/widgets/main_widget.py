@@ -65,6 +65,7 @@ class ProjectsActions:
     DeleteProject = 'delete_project_action'
     ClearRecentProjects = 'clear_recent_projects_action'
     MaxRecent = 'max_recent_action'
+    ProjectSettings = 'project_settings_action'
 
 
 class ProjectsMenuSubmenus:
@@ -262,6 +263,12 @@ class ProjectExplorerWidget(PluginMainWidget):
             text=_("Maximum number of recent projects"),
             icon=self.create_icon("transparent"),
             triggered=self.change_max_recent_projects)
+
+        self.project_settings_action = self.create_action(
+            ProjectsActions.ProjectSettings,
+            text=_("Project Settings ..."),
+            icon=self.create_icon("transparent"),
+            triggered=self.change_settings)
 
         self.recent_project_menu = self.create_menu(
             ProjectsMenuSubmenus.RecentProjects,
@@ -531,6 +538,10 @@ class ProjectExplorerWidget(PluginMainWidget):
             if max_projects < len(self.recent_projects):
                 self.recent_projects = self._get_valid_recent_projects(
                     self.recent_projects)[:max_projects]
+
+    def change_settings(self):
+        logger.debug("Change settings ...")
+        pass
 
     def reopen_last_project(self, working_directory, restart_console):
         """
