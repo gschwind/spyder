@@ -39,6 +39,7 @@ from spyder.plugins.projects.api import (
     BaseProjectType, EmptyProject, WORKSPACE)
 from spyder.plugins.projects.utils.watcher import WorkspaceWatcher
 from spyder.plugins.projects.widgets.projectdialog import ProjectDialog
+from spyder.plugins.projects.widgets.configdialog import ConfigDialog
 from spyder.plugins.projects.widgets.projectexplorer import (
     ProjectExplorerTreeWidget)
 from spyder.plugins.switcher.utils import get_file_icon, shorten_paths
@@ -541,7 +542,11 @@ class ProjectExplorerWidget(PluginMainWidget):
 
     def change_settings(self):
         logger.debug("Change settings ...")
-        pass
+        self._unmaximize()
+
+        dlg = ConfigDialog(self)
+        result = dlg.exec_()
+ 
 
     def reopen_last_project(self, working_directory, restart_console):
         """
