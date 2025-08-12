@@ -12,6 +12,7 @@ from __future__ import annotations
 import os
 import os.path as osp
 import sys
+import logging
 from typing import TypedDict
 
 # Third party imports
@@ -38,6 +39,8 @@ from spyder.widgets.config import SpyderConfigPage
 from spyder.widgets.sidebardialog import SidebarDialog
 from spyder.widgets.helperwidgets import MessageLabel
 
+# For logging
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # ---- Auxiliary functions and classes
@@ -88,7 +91,7 @@ class BaseProjectPage(SpyderConfigPage, SpyderFontsMixin):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self._location = self.create_browsedir(
+        self._location = self.create_browsefile(
             text=self.LOCATION_TEXT,
             option=None,
             alignment=Qt.Vertical,
@@ -277,87 +280,22 @@ class ConfigDialog(QDialog, SpyderFontsMixin):
         self.setWindowTitle(_('Project settings'))
         self.setWindowIcon(ima.icon("project_new"))
 
+        self._page = ExistingDirectoryPage(self)
+        self._page._location.textbox.setText(parent.current_active_project.config.get('workspace', 'interpreter')
+)
 
-        xxxpage = ExistingDirectoryPage(self)
+        button = QPushButton(_('Save'))
+        button.clicked.connect(self.accept)
+
+        button1 = QPushButton(_('Cancel'))
+        button1.clicked.connect(self.reject)
 
         layout = QVBoxLayout()
-        layout.addWidget(xxxpage)
+        layout.addWidget(self._page)
+        layout.addWidget(button)
+        layout.addWidget(button1)
         self.setLayout(layout)
-
-    def create_buttons(self):
-        bbox = SpyderDialogButtonBox(
-            QDialogButtonBox.Cancel, orientation=Qt.Horizontal
-        )
-
-        self.button_create = QPushButton(_('Create'))
-        self.button_create.clicked.connect(self.create_project)
-        bbox.addButton(self.button_create, QDialogButtonBox.ActionRole)
-
-        layout = QHBoxLayout()
-        layout.addWidget(bbox)
-        return bbox, layout
     
-    def create_browsedir(self, text, option, default=None, section=None,
-                         tip=None, alignment=Qt.Horizontal, status_icon=None):
-        widget = self.create_lineedit(
-            text,
-            option,
-            default,
-            section=section,
-            alignment=alignment,
-            # We need the tip to be added by the lineedit if the alignment is
-            # vertical. If not, it'll be added below when setting the layout.
-            tip=tip if (tip and alignment == Qt.Vertical) else None,
-            status_icon=status_icon,
-        )
-
-        for edit in self.lineedits:
-            if widget.isAncestorOf(edit):
-                break
-
-        msg = _("Invalid directory path")
-        self.validate_data[edit] = (osp.isdir, msg)
-
-        browse_btn = QPushButton(ima.icon('DirOpenIcon'), '', self)
-        browse_btn.setToolTip(_("Select directory"))
-        browse_btn.clicked.connect(lambda: self.select_directory(edit))
-        browse_btn.setIconSize(
-            QSize(AppStyle.ConfigPageIconSize, AppStyle.ConfigPageIconSize)
-        )
-
-        if alignment == Qt.Vertical:
-            # This is necessary to position browse_btn vertically centered with
-            # respect to the lineedit.
-            browse_btn.setStyleSheet("margin-top: 28px")
-
-            layout = QGridLayout()
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(widget, 0, 0)
-            layout.addWidget(browse_btn, 0, 1)
-        else:
-            # This is necessary to position browse_btn vertically centered with
-            # respect to the lineedit.
-            browse_btn.setStyleSheet("margin-top: 2px")
-
-            layout = QHBoxLayout()
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(widget)
-            layout.addWidget(browse_btn)
-            if tip is not None:
-                layout, help_label = self.add_help_info_label(layout, tip)
-
-        browsedir = QWidget(self)
-        browsedir.textbox = widget.textbox
-        if status_icon:
-            browsedir.status_action = widget.status_action
-
-        browsedir.setLayout(layout)
-        return browsedir
-
-
-    def create_project(self):
-        pass
-
 
 def test():
     """Local test."""

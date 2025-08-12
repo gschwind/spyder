@@ -546,6 +546,10 @@ class ProjectExplorerWidget(PluginMainWidget):
 
         dlg = ConfigDialog(self)
         result = dlg.exec_()
+        if result:
+            pyexec = dlg._page._location.textbox.text()
+            logger.info(pyexec)
+            self.current_active_project.config.set(WORKSPACE, 'interpreter', pyexec, verbose=True)
  
 
     def reopen_last_project(self, working_directory, restart_console):
