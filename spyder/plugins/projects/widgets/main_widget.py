@@ -438,6 +438,7 @@ class ProjectExplorerWidget(PluginMainWidget):
         if not open_successfully:
             QMessageBox.warning(self, "Project open", message)
 
+
     def close_project(self):
         """
         Close current project and return to a window without an active

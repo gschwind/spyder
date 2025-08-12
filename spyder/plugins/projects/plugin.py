@@ -43,7 +43,8 @@ class Projects(SpyderDockablePlugin):
     CONF_FILE = False
     REQUIRES = []
     OPTIONAL = [Plugins.Completions, Plugins.IPythonConsole, Plugins.Editor,
-                Plugins.MainMenu, Plugins.Switcher, Plugins.Application]
+                Plugins.MainMenu, Plugins.Switcher, Plugins.Application,
+                Plugins.MainInterpreter]
     WIDGET_CLASS = ProjectExplorerWidget
 
     # Signals
@@ -124,6 +125,19 @@ class Projects(SpyderDockablePlugin):
                 self.get_widget().restore_scrollbar_position)
 
         self.register_project_type(self, EmptyProject)
+
+    @on_plugin_available(plugin=Plugins.MainInterpreter)
+    def on_maininterpreter_available(self):
+        widget = self.get_widget()
+        widget.sig_project_loaded.connect(lambda v: self._update_active_interpreter())
+
+    def _update_active_interpreter(self):
+        widget = self.get_widget()
+        if widget.current_active_project is not None:
+            maininterpreter = self.get_plugin(Plugins.MainInterpreter)
+            maininterpreter.get_container().add_to_custom_interpreters(widget.current_active_project.config.get('workspace', 'interpreter'))
+            maininterpreter.get_container().validate_custom_interpreters_list()
+            maininterpreter.set_custom_interpreter(widget.current_active_project.config.get('workspace', 'interpreter'))
 
     @on_plugin_available(plugin=Plugins.Editor)
     def on_editor_available(self):
