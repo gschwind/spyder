@@ -543,15 +543,17 @@ class ProjectExplorerWidget(PluginMainWidget):
 
     def change_settings(self):
         logger.debug("Change settings ...")
-        self._unmaximize()
 
-        dlg = ConfigDialog(self)
+        if self.current_active_project is None:
+            # TODO: Show error dialog
+            return
+
+        self._unmaximize()
+        dlg = ConfigDialog(self, self.current_active_project)
         result = dlg.exec_()
         if result:
-            pyexec = dlg._page._location.textbox.text()
-            logger.info(pyexec)
-            self.current_active_project.config.set(WORKSPACE, 'interpreter', pyexec, verbose=True)
- 
+            dlg.save_configuration()
+
 
     def reopen_last_project(self, working_directory, restart_console):
         """

@@ -74,8 +74,8 @@ class ValidationReasons(TypedDict):
 # =============================================================================
 # ---- Pages
 # =============================================================================
-class BaseProjectPage(SpyderConfigPage, SpyderFontsMixin):
-    """Base project page."""
+class SettingsPage(SpyderConfigPage, SpyderFontsMixin):
+    """Settings page for projects."""
 
     # SidebarPage API
     MIN_HEIGHT = 300
@@ -110,9 +110,8 @@ class BaseProjectPage(SpyderConfigPage, SpyderFontsMixin):
     # ---- Public API
     # -------------------------------------------------------------------------
     @property
-    def project_location(self):
-        """Where the project is going to be created."""
-        raise NotImplementedError
+    def interpreter(self):
+        return osp.normpath(self._location.textbox.text())
 
     def validate_page(self):
         """Actions to take to validate the page contents."""
@@ -122,6 +121,14 @@ class BaseProjectPage(SpyderConfigPage, SpyderFontsMixin):
     def project_type(self):
         """Project type associated to this page."""
         return EmptyProject
+
+    def load_configuration(self, config):
+        """Load configuration inot the dialog"""
+        self._location.textbox.setText(
+            config.get('workspace', 'interpreter'))
+
+    def save_configuration(self, config):
+        config.set('workspace', 'interpreter', self.interpreter)
 
     # ---- Private API
     # -------------------------------------------------------------------------
@@ -211,9 +218,6 @@ class BaseProjectPage(SpyderConfigPage, SpyderFontsMixin):
 
         return text
 
-class ExistingDirectoryPage(BaseProjectPage):
-    """Existing directory project page."""
-
     LOCATION_TEXT = _("Project path")
     LOCATION_TIP = _("Select the directory to use for the project")
 
@@ -238,10 +242,6 @@ class ExistingDirectoryPage(BaseProjectPage):
         layout.addWidget(self._validation_label)
         layout.addStretch()
         self.setLayout(layout)
-
-    @property
-    def project_location(self):
-        return osp.normpath(self._location.textbox.text())
 
     def validate_page(self):
         # Clear validation state
@@ -269,14 +269,18 @@ class ExistingDirectoryPage(BaseProjectPage):
 class ConfigDialog(QDialog, SpyderFontsMixin):
     """Project settings dialog."""
 
-    def __init__(self, parent):
+    def __init__(self, parent, project):
         """Project settings dialog."""
         QDialog.__init__(self, parent=parent)
+
+        assert project is not None
+
+        self._project = project
 
         buttons = SpyderDialogButtonBox(
             QDialogButtonBox.Save|QDialogButtonBox.Cancel,
             parent=self)
-        
+
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
 
@@ -285,17 +289,22 @@ class ConfigDialog(QDialog, SpyderFontsMixin):
         self.setWindowFlags(
             self.windowFlags() & ~Qt.WindowContextHelpButtonHint
         )
-        self.setWindowTitle(_('Project settings'))
+        self.setWindowTitle(_('Project settings')+f"[{self._project.get_name()}]")
         self.setWindowIcon(ima.icon("project_new"))
 
-        self._page = ExistingDirectoryPage(self)
-        self._page._location.textbox.setText(
-            parent.current_active_project.config.get('workspace', 'interpreter'))
+        self._page = SettingsPage(self)
+        self._page.load_configuration(self._project.config)
+
         layout = QVBoxLayout()
         layout.addWidget(self._page)
         layout.addWidget(buttons)
         self.setLayout(layout)
-    
+
+    def load_configuration(self, config):
+        self._page.load_configuration(config)
+
+    def save_configuration(self):
+        self._page.save_configuration(self._project.config)
 
 def test():
     """Local test."""
