@@ -272,6 +272,14 @@ class ConfigDialog(QDialog, SpyderFontsMixin):
     def __init__(self, parent):
         """Project settings dialog."""
         QDialog.__init__(self, parent=parent)
+
+        buttons = SpyderDialogButtonBox(
+            QDialogButtonBox.Save|QDialogButtonBox.Cancel,
+            parent=self)
+        
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+
         self.project_data = {}
 
         self.setWindowFlags(
@@ -281,19 +289,11 @@ class ConfigDialog(QDialog, SpyderFontsMixin):
         self.setWindowIcon(ima.icon("project_new"))
 
         self._page = ExistingDirectoryPage(self)
-        self._page._location.textbox.setText(parent.current_active_project.config.get('workspace', 'interpreter')
-)
-
-        button = QPushButton(_('Save'))
-        button.clicked.connect(self.accept)
-
-        button1 = QPushButton(_('Cancel'))
-        button1.clicked.connect(self.reject)
-
+        self._page._location.textbox.setText(
+            parent.current_active_project.config.get('workspace', 'interpreter'))
         layout = QVBoxLayout()
         layout.addWidget(self._page)
-        layout.addWidget(button)
-        layout.addWidget(button1)
+        layout.addWidget(buttons)
         self.setLayout(layout)
     
 
