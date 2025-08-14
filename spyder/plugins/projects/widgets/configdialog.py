@@ -151,12 +151,6 @@ class SettingsPage(SpyderConfigPage, SpyderFontsMixin):
                 + suffix
             )
 
-        if reasons.get("missing_info"):
-            text += (
-                prefix
-                + _("There are missing fields on this page.")
-            )
-
         return text
 
     def get_name(self):
