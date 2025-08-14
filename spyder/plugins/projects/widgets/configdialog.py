@@ -26,6 +26,7 @@ from qtpy.QtWidgets import (
     QLabel,
     QPushButton,
     QVBoxLayout,
+    QSizePolicy,
 )
 
 # Local imports
@@ -78,8 +79,7 @@ class SettingsPage(SpyderConfigPage, SpyderFontsMixin):
     """Settings page for projects."""
 
     # SidebarPage API
-    MIN_HEIGHT = 300
-    MAX_WIDTH = 430 if MAC else (400 if WIN else 420)
+    MAX_WIDTH = 99999
 
     # SpyderConfigPage API
     LOAD_FROM_CONFIG = False
@@ -88,10 +88,10 @@ class SettingsPage(SpyderConfigPage, SpyderFontsMixin):
         super().__init__(parent)
 
         self._location = self.create_browsefile(
-            text=self.LOCATION_TEXT,
+            text=_("Interpreter location"),
             option=None,
             alignment=Qt.Vertical,
-            tip=self.LOCATION_TIP,
+            tip=_("Select the python executable to use for the project. Leave empty to use the default interpreter"),
             status_icon=ima.icon("error"),
         )
 
@@ -144,31 +144,7 @@ class SettingsPage(SpyderConfigPage, SpyderFontsMixin):
         suffix = "<br>" if n_reasons > 1 else ""
 
         text = ""
-        if reasons.get("location_exists"):
-            text += (
-                prefix
-                + _(
-                    "The directory you selected for this project already "
-                    "exists."
-                )
-                + suffix
-            )
-        elif reasons.get("spyder_project_exists"):
-            text += (
-                prefix
-                + _("This directory is already a Spyder project.")
-                + suffix
-            )
-        elif reasons.get("location_not_writable"):
-            text += (
-                prefix
-                + _(
-                    "You don't have write permissions in the location you "
-                    "selected."
-                )
-                + suffix
-            )
-        elif reasons.get("no_location"):
+        if reasons.get("no_location"):
             text += (
                 prefix
                 + _("The location you selected doesn't exist.")
@@ -190,15 +166,7 @@ class SettingsPage(SpyderConfigPage, SpyderFontsMixin):
         return self.create_icon("DirClosedIcon")
 
     def setup_page(self):
-        description = QLabel(
-            _("Create a Spyder project in an existing directory")
-        )
-        description.setWordWrap(True)
-        description.setFont(self._description_font)
-
         layout = QVBoxLayout()
-        layout.addWidget(description)
-        layout.addSpacing(5 * AppStyle.MarginSize)
         layout.addWidget(self._location)
         layout.addSpacing(7 * AppStyle.MarginSize)
         layout.addWidget(self._validation_label)
@@ -253,6 +221,7 @@ class ConfigDialog(QDialog, SpyderFontsMixin):
         self.setWindowIcon(ima.icon("project_new"))
 
         self._page = SettingsPage(self)
+        self._page.initialize()
         self._page.load_configuration(self._project.config)
 
         layout = QVBoxLayout()
