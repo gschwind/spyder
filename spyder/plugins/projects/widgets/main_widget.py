@@ -553,6 +553,11 @@ class ProjectExplorerWidget(PluginMainWidget):
         result = dlg.exec_()
         if result:
             dlg.save_configuration()
+            from spyder.api.plugins import Plugins
+            maininterpreter = self.get_plugin().get_plugin(Plugins.MainInterpreter)
+            maininterpreter.set_custom_interpreter(self.current_active_project.config.get('workspace', 'interpreter'))
+
+
 
 
     def reopen_last_project(self, working_directory, restart_console):
