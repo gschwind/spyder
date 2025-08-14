@@ -84,10 +84,6 @@ class SettingsPage(SpyderConfigPage, SpyderFontsMixin):
     # SpyderConfigPage API
     LOAD_FROM_CONFIG = False
 
-    # Own API
-    LOCATION_TEXT = _("Location")
-    LOCATION_TIP = None
-
     def __init__(self, parent):
         super().__init__(parent)
 
@@ -113,15 +109,6 @@ class SettingsPage(SpyderConfigPage, SpyderFontsMixin):
     def interpreter(self):
         return osp.normpath(self._location.textbox.text())
 
-    def validate_page(self):
-        """Actions to take to validate the page contents."""
-        raise NotImplementedError
-
-    @property
-    def project_type(self):
-        """Project type associated to this page."""
-        return EmptyProject
-
     def load_configuration(self, config):
         """Load configuration inot the dialog"""
         self._location.textbox.setText(
@@ -142,34 +129,12 @@ class SettingsPage(SpyderConfigPage, SpyderFontsMixin):
         if reasons is None:
             reasons: ValidationReasons = {}
 
-        if not location:
-            self._location.status_action.setVisible(True)
-            self._location.status_action.setToolTip(_("This is empty"))
-            reasons["missing_info"] = True
-        elif not osp.isdir(location):
+        if not osp.isfile(location):
             self._location.status_action.setVisible(True)
             self._location.status_action.setToolTip(
                 _("This directory doesn't exist")
             )
             reasons["no_location"] = True
-        elif not is_writable(location):
-            self._location.status_action.setVisible(True)
-            self._location.status_action.setToolTip(
-                _("This directory is not writable")
-            )
-            reasons["location_not_writable"] = True
-        elif name is not None:
-            project_path = osp.join(location, name)
-            if osp.isdir(project_path):
-                reasons["location_exists"] = True
-        else:
-            spyproject_path = osp.join(location, '.spyproject')
-            if osp.isdir(spyproject_path):
-                self._location.status_action.setVisible(True)
-                self._location.status_action.setToolTip(
-                    _("You selected a Spyder project")
-                )
-                reasons["spyder_project_exists"] = True
 
         return reasons
 
@@ -217,9 +182,6 @@ class SettingsPage(SpyderConfigPage, SpyderFontsMixin):
             )
 
         return text
-
-    LOCATION_TEXT = _("Project path")
-    LOCATION_TIP = _("Select the directory to use for the project")
 
     def get_name(self):
         return _("Existing directory")
@@ -283,8 +245,6 @@ class ConfigDialog(QDialog, SpyderFontsMixin):
 
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
-
-        self.project_data = {}
 
         self.setWindowFlags(
             self.windowFlags() & ~Qt.WindowContextHelpButtonHint
