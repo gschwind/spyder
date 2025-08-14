@@ -260,6 +260,10 @@ class ConfigDialog(QDialog, SpyderFontsMixin):
         layout.addWidget(buttons)
         self.setLayout(layout)
 
+    @property
+    def project(self):
+        return self._project
+
     def load_configuration(self, config):
         self._page.load_configuration(config)
 
